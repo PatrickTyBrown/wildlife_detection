@@ -3,74 +3,75 @@
  
 ### **Client:** <br>
 
-The client is a large student loan processer. <br>
+The client is a Wildlife Conservation Organization. <br>
 
 ***
 
 ### **Question/Need:**<br>
 
 
-The company receives thousands of correspondance per day. Correspondance comes in the form of emails, faxes, web forms and letters. Each correspondance must be routed to the correct department for processing.Currently, this process is done by hand and requires a department to keep up with the volumes of documents.
+The organization works to preserve lands home to biodiversity and sensitive wildlife populations. A large component of this process is understanding and tracking wildlife populations and behaviors. 
 <br>
 
-The goal of this project is generate a classification model to help automate the document coding/routing process.
+The goal of this project is to develop a system for the organization to identify wildlife present. 
 <br>
 
 ***
 
 ### **Data Description:**<br>
 
-The data I will be using are example images of documents that would need to be classified with their document code.<br>
+We will be using the [Open Images Dataset](https://storage.googleapis.com/openimages/web/index.html) by Google. The dataset is quite large so we will be limiting it to relevant labels for our wildlife detection. We will then using images as our feature set. We will use labels and bounding boxes as our targets.<br>
 ***
 
 ### **Solution Path:**<br>
-This problem is complex and will require engineering to solve. Issues and solutions identified below:
+We see our solution to this problem as two stage:
 
-- Data (There is not a large dataset of filled documents)
-  - We will start by manually gathering template versions of the documents
-  - Then using OpenCV we will add pseudorandom text to the images to simulate filled forms
-  - These "filled forms" will then be randomly augmented using distortion, noise and masking. 
-  - This combination of tooling will allow us to create an arbitrary number of samples for each class and should help simulate poor quality and noisy production images
-- Preprocessing
-  - If not already, images will need to be converted to greyscale
-  - Images will need to be resized to a consist size ie. 80x80
-  - **Feature Engineering**
-    - Option 1: Flatten image to create 1 "row" of data with each column being a different pixel
-    - Option 2: We use a pretrained image model such as [Document Transformer](https://huggingface.co/spaces/microsoft/document-image-transformer) to create embeddings for the images. The model could then be trained on those embeddings. 
+1. Create a general purpose model as a proof of concept. 
+     - We will use a [YOLO](https://arxiv.org/abs/1506.02640) like model for predicting our classes and boxes.  
+     - We will not be concerned with model speed or size here.
+2. Create a smaller specialize model.*
+    - Utilze First model as a teacher. Perform knowledge distilation for training the smaller model. See [Keras implementation](https://keras.io/examples/vision/knowledge_distillation/) as a resource. 
+
+- **Feature Engineering**
+    - Images will need to be resized to a smaller resolution.
+    - Images may be augmented to help generalization to images in the wild. 
 - Model
-  - Logistic Regression
-  - Tree Based Model
-  - *NN*
-    - Utilize pretrained image model and add a classification layer
+  - YOLO* 
+  - Faster rCNN
+  - rFCN
+
+<sub>*See Constraints</sub><br>
+<sub>**Leading option</sub>
 <br>
 
 ***
 
 ### **Criteria for Success:**<br>
 
-Document coding efficiency can be increased by 20% without increasing accuracy from the current 88%.
-- We can reach 90% precision on 20% of samples for a given class. 
+- Our model is able to detect the presence of wildlife in naturalistic images. 
+- Our model is lightweight enough to run on a small device.*
+
+<sub>*See Constraints</sub>
 <br>
 
 ***
 
-### **Assumptions and Risks:**<br>
+### **Assumptions, Risks and Constraints:**<br>
 
-Our data augmentation strategy will generalize to real life incoming documentation.
+The organization will need to gather data from remote regions where access to the internet may be unavailable. The will need to gather data from large areas requiring many monitoring points. This scale will make it infeasible for the organization to deploy stations with network capabilities. Without the ability to uploud images regularly storage will become an issue. The smaller model we can develop the easier it will be to deploy in specialize devices with limited compute. Rather than storing images, we will only need to store records of the wildlife scene. 
 <br>
 
-We risk biased misclassification of documents.
+Our data augmentation strategy will generalize to real life incoming documentation.
 <br>
 ***
 
 ### **Tools:**<br>
-Sklearn will be used for modeling. 
-
-Pytorch/huggingface may be used for modeling or embedding.
-
-OpenCV will be used for image processing.
-
-Gradio may be used for creating a demo app. Alternative could be FastAPI and Angular. 
+1. Keras
+2. Numpy
+3. OpenCV
+4. Gradio
+5. Albumentations
+6. Google Colab
 
 <br>
 
@@ -87,4 +88,4 @@ A demo web app will be presented allowing for live demonstration of the tool.
 
 ### **MVP Goal:**<br>
 
-An MVP for this project will consist of a Logistic Regression fit on flattened pixel values of the images.
+An MVP for this project will consist of a model generated to detect the presence of a small number of animals.
